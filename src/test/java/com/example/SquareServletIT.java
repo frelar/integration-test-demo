@@ -1,8 +1,9 @@
 package com.example;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.mortbay.jetty.Server;
+import org.mortbay.jetty.servlet.Context;
+import org.mortbay.jetty.servlet.ServletHolder;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -17,9 +18,18 @@ import static org.junit.Assert.assertEquals;
 public class SquareServletIT {
 
     private HttpURLConnection connection;
+    private static Server server;
+
+    @BeforeClass
+    public static void setUpServer() throws Exception {
+        server = new Server(8080);
+        Context root = new Context(server, "/integration-test-demo", Context.SESSIONS);
+        root.addServlet(new ServletHolder(new SquareServlet()), "/app/*");
+        server.start();
+    }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUpClient() throws Exception {
         URL url = new URL("http://localhost:8080/integration-test-demo/app?base=10");
         connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
@@ -27,8 +37,13 @@ public class SquareServletIT {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDownClient() throws Exception {
         connection.disconnect();
+    }
+
+    @AfterClass
+    public static void tearDownServer() throws Exception {
+        server.stop();
     }
 
     @Test
