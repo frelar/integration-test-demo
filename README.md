@@ -10,9 +10,9 @@ Unit tests
 
 Integration tests
 
-    mvn -PDEV verify
+    mvn verify
 
 Running the server
 
-    mvn -PDEV jetty:run
+    mvn jetty:run
     open http://localhost:8080/integration-test-demo/app?base=2

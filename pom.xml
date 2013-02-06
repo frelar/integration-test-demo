@@ -34,7 +34,6 @@
     </properties>
 
     <!-- Build Settings -->
-    <!-- Profiles are at the end of this file -->
     <build>
         <plugins>
             <!-- Ensures we are compiling at correct language level -->
@@ -59,72 +58,60 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.11</version>
             </plugin>
+            <!-- Embedded servlet container -->
+            <plugin>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>maven-jetty-plugin</artifactId>
+                <version>${jetty.version}</version>
+                <configuration>
+                    <scanIntervalSeconds>10</scanIntervalSeconds>
+                    <stopKey>foo</stopKey>
+                    <stopPort>9999</stopPort>
+                </configuration>
+                <executions>
+                    <!-- Make jetty available for integration tests that are -->
+                    <!-- run by the failsafe plugin -->
+                    <execution>
+                        <id>start-jetty</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <scanIntervalSeconds>0</scanIntervalSeconds>
+                            <daemon>true</daemon>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>stop-jetty</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+                Almost the same as surefire, but the failsafe plugin runs the
+                integration test (*IT.java). An integration test (in this context)
+                is defined as junit test that requires a running servlet container.
+                The integration tests can be run with the 'mvn verify'
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.11</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <!--suppress MavenModelInspection -->
+                            <goal>integration-test</goal>
+                            <!--suppress MavenModelInspection -->
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
-    <!-- More Project Information -->
-    <profiles>
-        <!-- Profile used for development and integration tests with Jetty -->
-        <profile>
-            <id>DEV</id>
-            <build>
-                <plugins>
-                    <!-- Embedded servlet container -->
-                    <plugin>
-                        <groupId>org.mortbay.jetty</groupId>
-                        <artifactId>maven-jetty-plugin</artifactId>
-                        <version>${jetty.version}</version>
-                        <configuration>
-                            <scanIntervalSeconds>10</scanIntervalSeconds>
-                            <stopKey>foo</stopKey>
-                            <stopPort>9999</stopPort>
-                        </configuration>
-                        <executions>
-                            <!-- Make jetty available for integration tests that are -->
-                            <!-- run by the failsafe plugin -->
-                            <execution>
-                                <id>start-jetty</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <scanIntervalSeconds>0</scanIntervalSeconds>
-                                    <daemon>true</daemon>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>stop-jetty</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>stop</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!--
-                        Almost the same as surefire, but the failsafe plugin runs the
-                        integration test (*IT.java). An integration test (in this context)
-                        is defined as junit test that requires a running servlet container.
-                        The integration tests can be run with the 'mvn verify'
-                    -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>2.11</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <!--suppress MavenModelInspection -->
-                                    <goal>integration-test</goal>
-                                    <!--suppress MavenModelInspection -->
-                                    <goal>verify</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
